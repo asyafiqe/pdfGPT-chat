@@ -25,10 +25,6 @@ def main():
         return df.to_csv(index=False).encode("utf-8")
 
     def load_pdf():
-        if not check_url(lcserve_host):
-            return st.error("Please enter valid API host.")
-        elif not check_api(openai_key):
-            return st.error("Please enter valid OpenAI API.")
         elif file is None and len(pdf_url) == 0:
             return st.error("Both URL and PDF is empty. Provide at least one.")
         elif len(pdf_url) > 0:
