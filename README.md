@@ -50,6 +50,7 @@ lc-serve deploy jcloud api.py
 [Jina Cloud]:https://cloud.jina.ai/
 
 ## UML
+```mermaid
 sequenceDiagram
     participant User
     participant Streamlit
@@ -76,3 +77,4 @@ sequenceDiagram
     OpenAI->>-Langchain serve:Return answer
     Langchain serve-->>-Streamlit: Return answer
     Streamlit-->>-User: Return answer
+```
