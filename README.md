@@ -30,15 +30,15 @@ https://twitter.com/karpathy/status/1647025230546886658
 ## Use pdfGPT on production using [langchain-serve]
 **Local playground**
 1. To expose the app as an API using langchain-serve, open one terminal and run:
-```
+```sh
 lc-serve deploy local api.py
-```
+```sh
 2. To start streamlit, open another terminal and run:
-```
+```sh
 streamlit run app.py
 ```
 3. To interact with the UI, access from browser:
-```
+```sh
 http://localhost:8501/
 ```
 
@@ -47,3 +47,32 @@ Deploy pdfGPT-chat on [Jina Cloud] by running:
 ```sh
 lc-serve deploy jcloud api.py
 ```
+[Jina Cloud]:https://cloud.jina.ai/
+
+## UML
+sequenceDiagram
+    participant User
+    participant Streamlit
+    participant Langchain serve
+    participant OpenAI
+
+    User->>+Streamlit: Submit URL/file, API key
+    Streamlit->>Streamlit: Validate input
+    Streamlit-->>User: Return notification
+    Streamlit->>+Langchain serve: Send URL/file
+    Langchain serve->>Langchain serve: Preprocessing
+    Langchain serve->>Langchain serve: Crop PDF
+    Langchain serve->>Langchain serve: Convert PDF to text
+    Langchain serve->>Langchain serve: Decompose text to chunks
+    Langchain serve->>Langchain serve: Generate passage embedding with E5
+    Langchain serve-->>-Streamlit: Return notification
+    Streamlit-->>-User: Return notification
+    User->>+Streamlit: Ask question
+    Streamlit-->>+Langchain serve: Send question
+    Langchain serve->>Langchain serve: Semantic search with SVM, return top 5 chunks
+    Langchain serve->>Langchain serve: Generate prompt
+    Langchain serve->>+OpenAI: Send query
+    OpenAI->>OpenAI: Generate answer
+    OpenAI->>-Langchain serve:Return answer
+    Langchain serve-->>-Streamlit: Return answer
+    Streamlit-->>-User: Return answer
