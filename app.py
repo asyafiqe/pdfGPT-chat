@@ -49,26 +49,17 @@ def main():
             r = api.load_file(file,
                             rebuild_embedding = st.session_state["pdf_change"],
                             embedding_model = embedding_model)
-        return st.write(r)
+            if r == "Corpus loaded.":
+                st.session_state["loaded"] = True
+                st.session_state["pdf_change"] = False
+                return st.success("The PDF file has been loaded.")
+        return st.info(r)
 
-        # if r.status_code != 200:
-            # if "error" in r.json():
-                # if "message" in r.json()["error"]:
-                    # return st.error(r.json()["error"]["message"])
-            # else:
-                # return str(r.json())
-        # elif r.json()["result"] == "Corpus Loaded.":
-            # st.session_state["loaded"] = True
-            # st.session_state["pdf_change"] = False
-            # return st.success("The PDF file has been loaded.")
-        # else:
-            # return st.info(r.json()["result"])
 
     def pdf_change():
         st.session_state["pdf_change"] = True
 
     def generate_response(
-        lcserve_host: str,
         url: str,
         file: _TemporaryFileWrapper,
         question: str,
@@ -250,7 +241,6 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
             if user_input and submit_button:
                 with st.spinner("Processing your question"):
                     response = generate_response(
-                        lcserve_host,
                         pdf_url,
                         file,
                         user_input,
