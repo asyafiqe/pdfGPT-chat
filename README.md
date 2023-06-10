@@ -6,15 +6,18 @@ Powered by [Microsoft E5 Multilingual Text Embeddings] and OpenAI
 [pdfGPT]:https://github.com/bhaskatripathi/pdfGPT/
 [Microsoft E5 Multilingual Text Embeddings]:https://github.com/microsoft/unilm/tree/master/e5
 
+## Demo
+Try it now on streamlit share! https://pdfgptchat.streamlit.app
+
 ## Background
 pdfGPT is an awesome app for chatting with  your PDF, however several things can be improved:
-1. The developers cited Andrej Karpathy that KNN algorithm is superb for lookups on embedding, however Andrej Karpathy also mentioned that SVM (Support Vector Machine) yield better results than KNN.
-https://twitter.com/karpathy/status/1647025230546886658
+1. The developers cited Andrej Karpathy tweet that KNN algorithm is superb for lookups on embedding, however Andrej Karpathy also mentioned that SVM (Support Vector Machine) yield better results than KNN.
 2. For sentence embedding, pdfGPT use Universal Sentence Encoder (USE) which was released 2018. Several newer models, even fine-tuned for question answering (QA) and has multilingual support, are available.
 3. pdfGPT use text-davinci-003 to generate answer, gpt-3.5-turbo gives similar performance at [a fraction of the cost].
 4. Some pdf have header, footer, or some text in vertical margin. Some also implement word break with hyphen. This can polute sentence embedding.
 
 [a fraction of the cost]:https://openai.com/pricing
+[Andrej Karpathy tweet]:https://twitter.com/karpathy/status/1647025230546886658
 
 ## ✨Improvements
 1. **SVM** is implemented for semantic searching instead of KNN.
