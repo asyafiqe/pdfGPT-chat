@@ -3,6 +3,7 @@ import json
 import urllib.parse
 from tempfile import _TemporaryFileWrapper
 
+import api
 import pandas as pd
 import requests
 import streamlit as st
@@ -38,26 +39,20 @@ def main():
                 )
             # load pdf from url
             else:
-                r = requests.post(
-                    f"{lcserve_host}/load_url",
-                    json={
-                        "url": pdf_url,
-                        "rebuild_embedding": st.session_state["pdf_change"],
-                        "embedding_model": embedding_model,
-                    },
-                )
+                r = api.load_url(pdf_url, 
+                    rebuild_embedding = st.session_state["pdf_change"],
+                    embedding_model = embedding_model)
         # load file
         else:
             _data = {
                 "rebuild_embedding": st.session_state["pdf_change"],
                 "embedding_model": embedding_model,
             }
+            
+            r = api.load_file(file,
+                            rebuild_embedding = st.session_state["pdf_change"],
+                            embedding_model = embedding_model)
 
-            r = requests.post(
-                f"{lcserve_host}/load_file",
-                params={"input_data": json.dumps(_data)},
-                files={"file": file},
-            )
         if r.status_code != 200:
             if "error" in r.json():
                 if "message" in r.json()["error"]:
@@ -93,19 +88,11 @@ def main():
                 "OPENAI_API_KEY": openai_key,
             },
         }
-
         if url.strip() != "":
-            r = requests.post(
-                f"{lcserve_host}/ask_url",
-                json={"url": url, **_data},
-            )
+            r = api.ask_url(url, **_data)
 
         else:
-            r = requests.post(
-                f"{lcserve_host}/ask_file",
-                params={"input_data": json.dumps(_data)},
-                files={"file": file},
-            )
+            r = api.ask_file(file, **_data)
 
         if r.status_code != 200:
             content = r.content.decode()  # Convert bytes to string

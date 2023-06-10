@@ -1,7 +1,0 @@
-fastapi==0.96.0
-langchain_serve==0.0.41
-openai==0.27.7
-optimum==1.8.6
-PyMuPDF==1.22.3
-scikit_learn==1.0.2
-transformers==4.29.2
