@@ -12,7 +12,6 @@ import openai
 import torch
 import torch.nn.functional as F
 from fastapi import UploadFile
-from lcserve import serving
 from optimum.bettertransformer import BetterTransformer
 from sklearn import svm
 from torch import Tensor
