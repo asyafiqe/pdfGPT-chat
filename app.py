@@ -1,4 +1,5 @@
 # %%
+import os
 import json
 import urllib.parse
 from tempfile import _TemporaryFileWrapper
@@ -52,19 +53,20 @@ def main():
             r = api.load_file(file,
                             rebuild_embedding = st.session_state["pdf_change"],
                             embedding_model = embedding_model)
+        return st.write(r)
 
-        if r.status_code != 200:
-            if "error" in r.json():
-                if "message" in r.json()["error"]:
-                    return st.error(r.json()["error"]["message"])
-            else:
-                return str(r.json())
-        elif r.json()["result"] == "Corpus Loaded.":
-            st.session_state["loaded"] = True
-            st.session_state["pdf_change"] = False
-            return st.success("The PDF file has been loaded.")
-        else:
-            return st.info(r.json()["result"])
+        # if r.status_code != 200:
+            # if "error" in r.json():
+                # if "message" in r.json()["error"]:
+                    # return st.error(r.json()["error"]["message"])
+            # else:
+                # return str(r.json())
+        # elif r.json()["result"] == "Corpus Loaded.":
+            # st.session_state["loaded"] = True
+            # st.session_state["pdf_change"] = False
+            # return st.success("The PDF file has been loaded.")
+        # else:
+            # return st.info(r.json()["result"])
 
     def pdf_change():
         st.session_state["pdf_change"] = True
@@ -74,7 +76,6 @@ def main():
         url: str,
         file: _TemporaryFileWrapper,
         question: str,
-        openai_key: str,
     ) -> dict:
         if question.strip() == "":
             return "[ERROR]: Question field is empty"
@@ -84,9 +85,6 @@ def main():
             "rebuild_embedding": st.session_state["pdf_change"],
             "embedding_model": embedding_model,
             "gpt_model": gpt_model,
-            "envs": {
-                "OPENAI_API_KEY": openai_key,
-            },
         }
         if url.strip() != "":
             r = api.ask_url(url, **_data)
@@ -94,14 +92,7 @@ def main():
         else:
             r = api.ask_file(file, **_data)
 
-        if r.status_code != 200:
-            content = r.content.decode()  # Convert bytes to string
-            with open("langchainlog.txt", "w") as file:
-                file.write(content)
-            return f"[ERROR]: {r.text}"
-
-        result = r.json()["result"]
-        result = result.split("###")
+        result = r.split("###")
         keys = ["prompt", "answer", "token_used", "gpt_model"]
         # Error in OpenAI server also gives status_code 200
         if len(result) >= 0:
@@ -147,13 +138,15 @@ def main():
 
     if "total_token" not in st.session_state:
         st.session_state["total_token"] = 0
+        
+    os.environ["OPENAI_API_KEY"] = st.secrets["openai_key"]
 
     # %%
     # constants
     E5_URL = "https://github.com/microsoft/unilm/tree/master/e5"
     EMBEDDING_CHOICES = {
-        "multilingual-e5-base": "Multilingual-E5 (default)",
         "e5-small-v2": "English-E5-small (faster)",
+        "multilingual-e5-base": "Multilingual-E5 (default)",
     }
     GPT_CHOICES = {
         "gpt-3.5-turbo": "GPT-3.5-turbo (default)",
@@ -220,25 +213,6 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
     with input_details:
         # sidebar
         st.title("Input details")
-        lcserve_host = st.text_input(
-            label=":computer: Enter your API Host here",
-            value="http://localhost:8080",
-            placeholder="http://localhost:8080",
-            autocomplete="http://localhost:8080",
-            help="Your langchain-serve host, default is http://localhost:8080",
-        )
-
-        OPENAI_URL = "https://platform.openai.com/account/api-keys"
-        openai_key = st.text_input(
-            ":key: Enter your OpenAI API key here",
-            type="password",
-            help="Get your Open AI API key [here](%s)" % OPENAI_URL,
-        )
-        colored_header(
-            label="",
-            description="",
-            color_name="blue-40",
-        )
 
         pdf_url = st.text_input(
             ":globe_with_meridians: Enter PDF URL here", on_change=pdf_change
@@ -284,7 +258,6 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
                         pdf_url,
                         file,
                         user_input,
-                        openai_key,
                     )
                     st.session_state.past.append(user_input)
                     st.session_state.generated.append(response["answer"])
