@@ -25,7 +25,7 @@ def main():
         return df.to_csv(index=False).encode("utf-8")
 
     def load_pdf():
-        elif file is None and len(pdf_url) == 0:
+        if file is None and len(pdf_url) == 0:
             return st.error("Both URL and PDF is empty. Provide at least one.")
         elif len(pdf_url) > 0:
             if not check_url(pdf_url):
