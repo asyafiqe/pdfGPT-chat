@@ -1,7 +1,13 @@
-# pdfGPT-chat
+<p align="center">
+<h2 align="center">📄 LangChain Apps on Production with Jina & FastAPI 🤖</h2>
+</p>
+<p align="center">
+<b><i>Chat with your PDF!</i></b>
+</p>
+
 ### _Chat with your PDF!_
-**pdfGPT-chat** is a fork of [pdfGPT] with several improvements.
-Powered by [Microsoft E5 Multilingual Text Embeddings] and OpenAI 
+**pdfGPT-chat** is a fork of [pdfGPT] with several improvements. With pdfGPT-chat you can ask questions about the content of your PDF file. Powered by [Microsoft E5 Multilingual Text Embeddings] and OpenAI 
+
 
 [pdfGPT]:https://github.com/bhaskatripathi/pdfGPT/
 [Microsoft E5 Multilingual Text Embeddings]:https://github.com/microsoft/unilm/tree/master/e5
@@ -50,6 +56,7 @@ Deploy pdfGPT-chat on [Jina Cloud] by running:
 ```sh
 lc-serve deploy jcloud api.py
 ```
+[langchain-serve]:https://github.com/jina-ai/langchain-serve
 [Jina Cloud]:https://cloud.jina.ai/
 
 ## UML
