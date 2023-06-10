@@ -1,11 +1,10 @@
 <p align="center">
-<h2 align="center">📄 LangChain Apps on Production with Jina & FastAPI 🤖</h2>
+<h1 align="center">📄 pdfGPT-chat 🤖</h1>
 </p>
-<p align="center">
+<h3 align="center">
 <b><i>Chat with your PDF!</i></b>
-</p>
+</h3>
 
-### _Chat with your PDF!_
 **pdfGPT-chat** is a fork of [pdfGPT] with several improvements. With pdfGPT-chat you can ask questions about the content of your PDF file. Powered by [Microsoft E5 Multilingual Text Embeddings] and OpenAI 
 
 
