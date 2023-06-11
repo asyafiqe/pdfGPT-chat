@@ -237,6 +237,7 @@ def load_openai_key() -> str:
 
 # %%
 
+
 def ask_url(
     url: str,
     question: str,
@@ -248,7 +249,6 @@ def ask_url(
         load_url(url, embedding_model, rebuild_embedding)
     openai_key = load_openai_key()
     return generate_answer(question, gpt_model, openai_key)
-
 
 
 def ask_file(
@@ -264,16 +264,13 @@ def ask_file(
     return generate_answer(question, gpt_model, openai_key)
 
 
-
 def load_url(url: str, embedding_model: str, rebuild_embedding: bool) -> str:
     download_pdf(url, "corpus.pdf")
     return load_recommender("corpus.pdf", embedding_model, rebuild_embedding)
 
 
-def load_file(
-    file: UploadFile, embedding_model: str, rebuild_embedding: bool
-) -> str:
-    suffix = ".pdf"#Path(file.filename).suffix
+def load_file(file: UploadFile, embedding_model: str, rebuild_embedding: bool) -> str:
+    suffix = ".pdf"  # Path(file.filename).suffix
     with NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         shutil.copyfileobj(file, tmp)
         tmp_path = Path(tmp.name)
