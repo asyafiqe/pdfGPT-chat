@@ -5,16 +5,20 @@
 <b><i>Chat with your PDF!</i></b>
 </h3>
 
-**pdfGPT-chat** is a fork of [pdfGPT] with several improvements. With pdfGPT-chat you can ask questions about the content of your PDF file. Powered by [Microsoft E5 Multilingual Text Embeddings] and OpenAI 
+**pdfGPT-chat** is a fork of [pdfGPT] with several improvements. 
+With pdfGPT-chat you can ask questions about the content of your PDF file. 
+Powered by [Microsoft E5 Multilingual Text Embeddings] and OpenAI.
 
+**pdfGPT-chat** is a fork of [pdfGPT] with several improvements. With pdfGPT-chat, you can  chat with your PDF files powered by **[Microsoft E5 Multilingual Text Embeddings]** and **OpenAI**.
+Compared to other tools, pdfGPT-chat provides **hallucinations-free** response, thanks to its superior embeddings and tailored prompt. The generated responses from pdfGPT-chat include **citations** in square brackets ([]), indicating the **page numbers** where the relevant information is found. This feature not only enhances the credibility of the responses but also aids in swiftly locating the pertinent information within the PDF file.
 
 [pdfGPT]:https://github.com/bhaskatripathi/pdfGPT/
 [Microsoft E5 Multilingual Text Embeddings]:https://github.com/microsoft/unilm/tree/master/e5
 
-## Demo
-Try it now on streamlit share! https://pdfgptchat.streamlit.app
+## 💬Demo
+**Try it now** on streamlit share! https://pdfgptchat.streamlit.app
 
-## Background
+## 🔍Background
 pdfGPT is an awesome app for chatting with  your PDF, however several things can be improved:
 1. The developers cited Andrej Karpathy tweet that KNN algorithm is superb for lookups on embedding, however Andrej Karpathy also mentioned that SVM (Support Vector Machine) yield better results than KNN.
 2. For sentence embedding, pdfGPT use Universal Sentence Encoder (USE) which was released 2018. Several newer models, even fine-tuned for question answering (QA) and has multilingual support, are available.
@@ -35,7 +39,7 @@ pdfGPT is an awesome app for chatting with  your PDF, however several things can
 [Support 100 languages]:https://huggingface.co/intfloat/multilingual-e5-base
 [better performance]:https://arxiv.org/pdf/2212.03533.pdf
 
-## Use pdfGPT on production using [langchain-serve]
+## 🦜Use pdfGPT on production using [langchain-serve]
 **Local playground**
 1. To expose the app as an API using langchain-serve, open one terminal and run:
 ```sh

@@ -193,12 +193,13 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
 """
 
     with header:
-        st.title("pdfGPT-chat")
-        st.markdown(
-            "A fork of [pdfGPT](%s). pdfGPT-chat allows you to chat with your PDF file using **Microsoft Multilingual E5** and **Open AI**.<br />It gives **hallucination free** response than other tools as the embeddings are better than OpenAI.<br />The returned response can even **cite** the **page number** in square brackets([]) where the information is located,<br />adding credibility to the responses and helping to locate pertinent information quickly."
-            % PDFGPT_URL,
+        st.title(":page_facing_up: pdfGPT-chat")
+        with st.expander("A fork of [pdfGPT](%s) with several improvements. With pdfGPT-chat, you can chat with your PDF files using [**Microsoft E5 Multilingual Text Embeddings**](%s) and **OpenAI**." % (PDFGPT_URL, E5_URL)):
+            st.markdown(
+            "Compared to other tools, pdfGPT-chat provides **hallucinations-free** response, thanks to its superior embeddings and tailored prompt.<br />The generated responses from pdfGPT-chat include **citations** in square brackets ([]), indicating the **page numbers** where the relevant information is found.<br />This feature not only enhances the credibility of the responses but also aids in swiftly locating the pertinent information within the PDF file.",
             unsafe_allow_html=True,
-        )
+            )
+            
         colored_header(
             label="",
             description="",
