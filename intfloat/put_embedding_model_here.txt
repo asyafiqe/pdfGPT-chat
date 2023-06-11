@@ -1,0 +1,2 @@
+https://huggingface.co/intfloat/multilingual-e5-base/tree/main
+https://huggingface.co/intfloat/e5-small-v2/tree/main
