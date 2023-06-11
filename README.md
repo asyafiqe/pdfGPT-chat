@@ -5,11 +5,7 @@
 <b><i>Chat with your PDF!</i></b>
 </h3>
 
-**pdfGPT-chat** is a fork of [pdfGPT] with several improvements. 
-With pdfGPT-chat you can ask questions about the content of your PDF file. 
-Powered by [Microsoft E5 Multilingual Text Embeddings] and OpenAI.
-
-**pdfGPT-chat** is a fork of [pdfGPT] with several improvements. With pdfGPT-chat, you can  chat with your PDF files powered by **[Microsoft E5 Multilingual Text Embeddings]** and **OpenAI**.
+**pdfGPT-chat** is a fork of [pdfGPT] with several improvements. With pdfGPT-chat, you can  chat with your PDF files using **[Microsoft E5 Multilingual Text Embeddings]** and **OpenAI**.
 Compared to other tools, pdfGPT-chat provides **hallucinations-free** response, thanks to its superior embeddings and tailored prompt. The generated responses from pdfGPT-chat include **citations** in square brackets ([]), indicating the **page numbers** where the relevant information is found. This feature not only enhances the credibility of the responses but also aids in swiftly locating the pertinent information within the PDF file.
 
 [pdfGPT]:https://github.com/bhaskatripathi/pdfGPT/
@@ -39,12 +35,18 @@ pdfGPT is an awesome app for chatting with  your PDF, however several things can
 [Support 100 languages]:https://huggingface.co/intfloat/multilingual-e5-base
 [better performance]:https://arxiv.org/pdf/2212.03533.pdf
 
+### Docker
+Run '''docker-compose -f docker-compose.yaml up''' to use it with Docker compose. To interact with the UI, access from browser:
+```sh
+http://localhost:8501/
+```
+
 ## 🦜Use pdfGPT on production using [langchain-serve]
 **Local playground**
 1. To expose the app as an API using langchain-serve, open one terminal and run:
 ```sh
 lc-serve deploy local api.py
-```sh
+```
 2. To start streamlit, open another terminal and run:
 ```sh
 streamlit run app.py
@@ -61,6 +63,22 @@ lc-serve deploy jcloud api.py
 ```
 [langchain-serve]:https://github.com/jina-ai/langchain-serve
 [Jina Cloud]:https://cloud.jina.ai/
+
+## :computer: Running on localhost
+1. Pull the image by entering the following command in your terminal or command prompt:
+```sh
+docker pull asyafiqe/pdfgpt-chat:latest
+```
+2. Run pdfGPT-chat with the following command:
+```sh
+docker run asyafiqe/pdfgpt-chat:latest
+```
+3. To interact with the UI, access from browser:
+```sh
+http://localhost:8501/
+```
+
+
 
 ## UML
 ```mermaid
