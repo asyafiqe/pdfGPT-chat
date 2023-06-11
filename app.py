@@ -27,6 +27,10 @@ def main():
     def pdf_change():
         st.session_state["pdf_change"] = True
 
+    def check_url(url):
+        parsed_url = urllib.parse.urlparse(url)
+        return all([parsed_url.scheme, parsed_url.netloc])
+
     def load_pdf():
         if file is None and len(pdf_url) == 0:
             return st.error("Both URL and PDF is empty. Provide at least one.")
