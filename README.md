@@ -71,7 +71,7 @@ docker pull asyafiqe/pdfgpt-chat:latest
 ```
 2. Run pdfGPT-chat with the following command:
 ```sh
-docker run asyafiqe/pdfgpt-chat:latest
+docker run -p 8501:8501 asyafiqe/pdfgpt-chat:latest
 ```
 3. To interact with the UI, access from browser:
 ```sh

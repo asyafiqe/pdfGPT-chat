@@ -22,6 +22,16 @@ def main():
     def convert_df(df):
         return df.to_csv(index=False).encode("utf-8")
 
+    def pdf_change():
+        st.session_state["pdf_change"] = True
+
+    def check_api(api_key):
+        return api_key.startswith("sk-") and len(api_key) == 51
+
+    def check_url(url):
+        parsed_url = urllib.parse.urlparse(url)
+        return all([parsed_url.scheme, parsed_url.netloc])
+
     def load_pdf():
         if not check_url(lcserve_host):
             return st.error("Please enter valid API host.")
@@ -70,9 +80,6 @@ def main():
             return st.success("The PDF file has been loaded.")
         else:
             return st.info(r.json()["result"])
-
-    def pdf_change():
-        st.session_state["pdf_change"] = True
 
     def generate_response(
         lcserve_host: str,
@@ -194,12 +201,15 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
 
     with header:
         st.title(":page_facing_up: pdfGPT-chat")
-        with st.expander("A fork of [pdfGPT](%s) with several improvements. With pdfGPT-chat, you can chat with your PDF files using [**Microsoft E5 Multilingual Text Embeddings**](%s) and **OpenAI**." % (PDFGPT_URL, E5_URL)):
+        with st.expander(
+            "A fork of [pdfGPT](%s) with several improvements. With pdfGPT-chat, you can chat with your PDF files using [**Microsoft E5 Multilingual Text Embeddings**](%s) and **OpenAI**."
+            % (PDFGPT_URL, E5_URL)
+        ):
             st.markdown(
-            "Compared to other tools, pdfGPT-chat provides **hallucinations-free** response, thanks to its superior embeddings and tailored prompt.<br />The generated responses from pdfGPT-chat include **citations** in square brackets ([]), indicating the **page numbers** where the relevant information is found.<br />This feature not only enhances the credibility of the responses but also aids in swiftly locating the pertinent information within the PDF file.",
-            unsafe_allow_html=True,
+                "Compared to other tools, pdfGPT-chat provides **hallucinations-free** response, thanks to its superior embeddings and tailored prompt.<br />The generated responses from pdfGPT-chat include **citations** in square brackets ([]), indicating the **page numbers** where the relevant information is found.<br />This feature not only enhances the credibility of the responses but also aids in swiftly locating the pertinent information within the PDF file.",
+                unsafe_allow_html=True,
             )
-            
+
         colored_header(
             label="",
             description="",
@@ -268,13 +278,6 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
             type=["pdf"],
             on_change=pdf_change,
         )
-
-        def check_api(api_key):
-            return api_key.startswith("sk-") and len(api_key) == 51
-
-        def check_url(url):
-            parsed_url = urllib.parse.urlparse(url)
-            return all([parsed_url.scheme, parsed_url.netloc])
 
         if st.button("Load PDF"):
             st.session_state["loaded"] = True
