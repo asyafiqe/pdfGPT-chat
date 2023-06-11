@@ -1,8 +1,10 @@
 # %%
+import os
 import json
 import urllib.parse
 from tempfile import _TemporaryFileWrapper
 
+import api
 import pandas as pd
 import requests
 import streamlit as st
@@ -22,10 +24,18 @@ def main():
     def convert_df(df):
         return df.to_csv(index=False).encode("utf-8")
 
+    def pdf_change():
+        st.session_state["pdf_change"] = True
+
+    def check_api(api_key):
+        return api_key.startswith("sk-") and len(api_key) == 51
+
+    def check_url(url):
+        parsed_url = urllib.parse.urlparse(url)
+        return all([parsed_url.scheme, parsed_url.netloc])
+
     def load_pdf():
-        if not check_url(lcserve_host):
-            return st.error("Please enter valid API host.")
-        elif not check_api(openai_key):
+        if not check_api(openai_key):
             return st.error("Please enter valid OpenAI API.")
         elif file is None and len(pdf_url) == 0:
             return st.error("Both URL and PDF is empty. Provide at least one.")
@@ -38,13 +48,10 @@ def main():
                 )
             # load pdf from url
             else:
-                r = requests.post(
-                    f"{lcserve_host}/load_url",
-                    json={
-                        "url": pdf_url,
-                        "rebuild_embedding": st.session_state["pdf_change"],
-                        "embedding_model": embedding_model,
-                    },
+                r = api.load_url(
+                    pdf_url,
+                    rebuild_embedding=st.session_state["pdf_change"],
+                    embedding_model=embedding_model,
                 )
         # load file
         else:
@@ -53,29 +60,18 @@ def main():
                 "embedding_model": embedding_model,
             }
 
-            r = requests.post(
-                f"{lcserve_host}/load_file",
-                params={"input_data": json.dumps(_data)},
-                files={"file": file},
+            r = api.load_file(
+                file,
+                rebuild_embedding=st.session_state["pdf_change"],
+                embedding_model=embedding_model,
             )
-        if r.status_code != 200:
-            if "error" in r.json():
-                if "message" in r.json()["error"]:
-                    return st.error(r.json()["error"]["message"])
-            else:
-                return str(r.json())
-        elif r.json()["result"] == "Corpus Loaded.":
-            st.session_state["loaded"] = True
-            st.session_state["pdf_change"] = False
-            return st.success("The PDF file has been loaded.")
-        else:
-            return st.info(r.json()["result"])
-
-    def pdf_change():
-        st.session_state["pdf_change"] = True
+            if r == "Corpus loaded.":
+                st.session_state["loaded"] = True
+                st.session_state["pdf_change"] = False
+                return st.success("The PDF file has been loaded.")
+        return st.info(r)
 
     def generate_response(
-        lcserve_host: str,
         url: str,
         file: _TemporaryFileWrapper,
         question: str,
@@ -89,32 +85,14 @@ def main():
             "rebuild_embedding": st.session_state["pdf_change"],
             "embedding_model": embedding_model,
             "gpt_model": gpt_model,
-            "envs": {
-                "OPENAI_API_KEY": openai_key,
-            },
         }
-
         if url.strip() != "":
-            r = requests.post(
-                f"{lcserve_host}/ask_url",
-                json={"url": url, **_data},
-            )
+            r = api.ask_url(url, **_data)
 
         else:
-            r = requests.post(
-                f"{lcserve_host}/ask_file",
-                params={"input_data": json.dumps(_data)},
-                files={"file": file},
-            )
+            r = api.ask_file(file, **_data)
 
-        if r.status_code != 200:
-            content = r.content.decode()  # Convert bytes to string
-            with open("langchainlog.txt", "w") as file:
-                file.write(content)
-            return f"[ERROR]: {r.text}"
-
-        result = r.json()["result"]
-        result = result.split("###")
+        result = r.split("###")
         keys = ["prompt", "answer", "token_used", "gpt_model"]
         # Error in OpenAI server also gives status_code 200
         if len(result) >= 0:
@@ -193,13 +171,15 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
 """
 
     with header:
-        st.title(":page_facing_up: pdfGPT-chat")
-        with st.expander("A fork of [pdfGPT](%s) with several improvements. With pdfGPT-chat, you can chat with your PDF files using [**Microsoft E5 Multilingual Text Embeddings**](%s) and **OpenAI**." % (PDFGPT_URL, E5_URL)):
+        st.title("pdfGPT-chat")
+        with st.expander(
+            "A fork of [pdfGPT](%s) with several improvements. With pdfGPT-chat, you can chat with your PDF files using [**Microsoft E5 Multilingual Text Embeddings**](%s) and **OpenAI**."
+            % (PDFGPT_URL, E5_URL)
+        ):
             st.markdown(
-            "Compared to other tools, pdfGPT-chat provides **hallucinations-free** response, thanks to its superior embeddings and tailored prompt.<br />The generated responses from pdfGPT-chat include **citations** in square brackets ([]), indicating the **page numbers** where the relevant information is found.<br />This feature not only enhances the credibility of the responses but also aids in swiftly locating the pertinent information within the PDF file.",
-            unsafe_allow_html=True,
+                "Compared to other tools, pdfGPT-chat provides **hallucinations-free** response, thanks to its superior embeddings and tailored prompt.<br />The generated responses from pdfGPT-chat include **citations** in square brackets ([]), indicating the **page numbers** where the relevant information is found.<br />This feature not only enhances the credibility of the responses but also aids in swiftly locating the pertinent information within the PDF file.",
+                unsafe_allow_html=True,
             )
-            
         colored_header(
             label="",
             description="",
@@ -234,14 +214,6 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
     with input_details:
         # sidebar
         st.title("Input details")
-        lcserve_host = st.text_input(
-            label=":computer: Enter your API Host here",
-            value="http://localhost:8080",
-            placeholder="http://localhost:8080",
-            autocomplete="http://localhost:8080",
-            help="Your langchain-serve host, default is http://localhost:8080",
-        )
-
         OPENAI_URL = "https://platform.openai.com/account/api-keys"
         openai_key = st.text_input(
             ":key: Enter your OpenAI API key here",
@@ -269,15 +241,9 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
             on_change=pdf_change,
         )
 
-        def check_api(api_key):
-            return api_key.startswith("sk-") and len(api_key) == 51
-
-        def check_url(url):
-            parsed_url = urllib.parse.urlparse(url)
-            return all([parsed_url.scheme, parsed_url.netloc])
-
         if st.button("Load PDF"):
             st.session_state["loaded"] = True
+            os.environ["OPENAI_API_KEY"] = openai_key
             with st.spinner("Loading PDF"):
                 with load_pdf_popup:
                     load_pdf()
@@ -294,7 +260,6 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
             if user_input and submit_button:
                 with st.spinner("Processing your question"):
                     response = generate_response(
-                        lcserve_host,
                         pdf_url,
                         file,
                         user_input,

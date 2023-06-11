@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  pdfgpt-chat:
+    build:
+      context: . 
+      target: pdfgpt-chat
+    ports:
+      - '8501:8501'

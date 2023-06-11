@@ -36,7 +36,7 @@ pdfGPT is an awesome app for chatting with  your PDF, however several things can
 [better performance]:https://arxiv.org/pdf/2212.03533.pdf
 
 ## 🐋Docker
-Run '''docker-compose -f docker-compose.yaml up''' to use it with Docker compose. To interact with the UI, access from browser:
+Run ```docker-compose -f docker-compose.yaml up``` to use it with Docker compose. To interact with the UI, access from browser:
 ```sh
 http://localhost:8501/
 ```
@@ -71,7 +71,7 @@ docker pull asyafiqe/pdfgpt-chat:latest
 ```
 2. Run pdfGPT-chat with the following command:
 ```sh
-docker run asyafiqe/pdfgpt-chat:latest
+docker run -p 8501:8501 asyafiqe/pdfgpt-chat:latest
 ```
 3. To interact with the UI, access from browser:
 ```sh

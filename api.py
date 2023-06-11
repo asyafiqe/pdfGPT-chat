@@ -12,7 +12,6 @@ import openai
 import torch
 import torch.nn.functional as F
 from fastapi import UploadFile
-from lcserve import serving
 from optimum.bettertransformer import BetterTransformer
 from sklearn import svm
 from torch import Tensor
@@ -237,7 +236,8 @@ def load_openai_key() -> str:
 
 
 # %%
-@serving
+
+
 def ask_url(
     url: str,
     question: str,
@@ -251,8 +251,7 @@ def ask_url(
     return generate_answer(question, gpt_model, openai_key)
 
 
-@serving
-async def ask_file(
+def ask_file(
     file: UploadFile,
     question: str,
     rebuild_embedding: bool,
@@ -265,18 +264,14 @@ async def ask_file(
     return generate_answer(question, gpt_model, openai_key)
 
 
-@serving
 def load_url(url: str, embedding_model: str, rebuild_embedding: bool) -> str:
     download_pdf(url, "corpus.pdf")
     return load_recommender("corpus.pdf", embedding_model, rebuild_embedding)
 
 
-@serving
-async def load_file(
-    file: UploadFile, embedding_model: str, rebuild_embedding: bool
-) -> str:
-    suffix = Path(file.filename).suffix
+def load_file(file: UploadFile, embedding_model: str, rebuild_embedding: bool) -> str:
+    suffix = ".pdf"  # Path(file.filename).suffix
     with NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-        shutil.copyfileobj(file.file, tmp)
+        shutil.copyfileobj(file, tmp)
         tmp_path = Path(tmp.name)
     return load_recommender(str(tmp_path), embedding_model, rebuild_embedding)
