@@ -15,6 +15,8 @@ from fastapi import UploadFile
 from lcserve import serving
 from optimum.bettertransformer import BetterTransformer
 from sklearn import svm
+from sklearn.cluster import KMeans
+from sklearn.metrics import pairwise_distances_argmin_min
 from torch import Tensor
 from transformers import AutoModel, AutoTokenizer
 
@@ -164,6 +166,27 @@ class SemanticSearch:
         sorted_ix = np.argsort(-similarities)
         return sorted_ix
 
+    def summarize(self):
+        n_clusters = int(np.ceil(len(self.embeddings)**0.5))
+        # max cluster 5 (reserve token)
+        n_clusters = n_clusters if n_clusters <= 5 else 5
+        kmeans = KMeans(n_clusters=n_clusters, random_state=23)
+        kmeans = kmeans.fit(self.embeddings)
+
+        avg = []
+        closest = []
+        for j in range(n_clusters):
+            # find first chunk index of every cluster
+            idx = np.where(kmeans.labels_ == j)[0]
+            avg.append(np.mean(idx))
+        # find chunk that is closest to the centroid
+        closest, _ = pairwise_distances_argmin_min(kmeans.cluster_centers_,
+                                                   self.embeddings)
+        ordering = sorted(range(n_clusters), key=lambda k: avg[k])
+        # concat representative chunks
+        summary = [self.data[i] for i in [closest[idx] for idx in ordering]]
+        return summary
+
 
 def clear_cache():
     global recommender
@@ -203,7 +226,6 @@ def generate_text(openai_key, prompt, model="gpt-3.5-turbo"):
     message = f"{prompt}###{completions.choices[0].message.content}###{completions.usage.total_tokens}###{completions.model}"
     return message
 
-
 def generate_answer(question, gpt_model, openai_key):
     topn_chunks = recommender(question)
     prompt = ""
@@ -225,6 +247,23 @@ def generate_answer(question, gpt_model, openai_key):
     prompt += f"Query: {question}"
     answer = generate_text(openai_key, prompt, gpt_model)
     return answer
+
+def generate_summary(gpt_model, openai_key):
+    topn_chunks = recommender.summarize()
+    prompt = ""
+    prompt += (
+        "Summarize the highlights of the search results and output a summary in bulletpoints. "
+        "Do not write anything before the bulletpoints. "
+        "Cite each reference using [Page no.] notation (every result has this number at the beginning). "
+        "Citation should be done at the end of each sentence. "
+        "Give conclusion in the end. "
+        "Write summary in the same language as the search results. "
+        "Search results:\n\n"
+    )
+    for c in topn_chunks:
+        prompt += c + "\n\n"
+    summary = generate_text(openai_key, prompt, gpt_model)
+    return summary
 
 
 def load_openai_key() -> str:
@@ -266,17 +305,32 @@ async def ask_file(
 
 
 @serving
-def load_url(url: str, embedding_model: str, rebuild_embedding: bool) -> str:
+def load_url(url: str,
+             embedding_model: str,
+             rebuild_embedding: bool,
+             gpt_model: str
+             ) -> str:
     download_pdf(url, "corpus.pdf")
-    return load_recommender("corpus.pdf", embedding_model, rebuild_embedding)
+    notification = load_recommender("corpus.pdf", embedding_model, rebuild_embedding)
+    openai_key = load_openai_key()
+    summary = generate_summary(gpt_model, openai_key)
+    response = f"{notification}###{summary}"
+    return response
 
 
 @serving
 async def load_file(
-    file: UploadFile, embedding_model: str, rebuild_embedding: bool
+    file: UploadFile,
+        embedding_model: str,
+        rebuild_embedding: bool,
+        gpt_model: str
 ) -> str:
     suffix = Path(file.filename).suffix
     with NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         shutil.copyfileobj(file.file, tmp)
         tmp_path = Path(tmp.name)
-    return load_recommender(str(tmp_path), embedding_model, rebuild_embedding)
+    notification = load_recommender(str(tmp_path), embedding_model, rebuild_embedding)
+    openai_key = load_openai_key()
+    summary = generate_summary(gpt_model, openai_key)
+    response = f"{notification}###{summary}"
+    return response

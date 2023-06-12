@@ -32,6 +32,15 @@ def main():
         parsed_url = urllib.parse.urlparse(url)
         return all([parsed_url.scheme, parsed_url.netloc])
 
+    def result_to_dict(r, start):
+        result = r.json()["result"]
+        result = result.split("###")[start:]
+        keys = ["prompt", "answer", "token_used", "gpt_model"]
+        # Error in OpenAI server also gives status_code 200
+        if len(result) >= 0:
+            result.extend([result, 0, gpt_model])
+        return dict(zip(keys, result))
+
     def load_pdf():
         if not check_url(lcserve_host):
             return st.error("Please enter valid API host.")
@@ -54,6 +63,10 @@ def main():
                         "url": pdf_url,
                         "rebuild_embedding": st.session_state["pdf_change"],
                         "embedding_model": embedding_model,
+                        "gpt_model": gpt_model,
+                        "envs": {
+                            "OPENAI_API_KEY": openai_key,
+                        }
                     },
                 )
         # load file
@@ -61,6 +74,10 @@ def main():
             _data = {
                 "rebuild_embedding": st.session_state["pdf_change"],
                 "embedding_model": embedding_model,
+                "gpt_model": gpt_model,
+                "envs": {
+                    "OPENAI_API_KEY": openai_key,
+                }
             }
 
             r = requests.post(
@@ -74,9 +91,25 @@ def main():
                     return st.error(r.json()["error"]["message"])
             else:
                 return str(r.json())
-        elif r.json()["result"] == "Corpus Loaded.":
+        elif r.json()["result"].startswith("Corpus Loaded."):
             st.session_state["loaded"] = True
             st.session_state["pdf_change"] = False
+            # extract result
+            result = result_to_dict(r, 1)
+
+            # concatenate reply
+            reply_summary = "Hello there. I'm **pdfGPT-chat**.\nHere is a **summary** of your PDF:\n\n"
+            reply_summary += result["answer"]
+            reply_summary += "\n\nDo you have any **question** about your PDF?"
+
+            if len(st.session_state["past"]) == 1:
+                st.session_state["generated"][0] = reply_summary
+            else:
+                st.session_state["past"].append("Hi")
+                st.session_state["generated"].append(reply_summary)
+
+            # calculate cost
+            calculate_cost(result["token_used"], result["gpt_model"])
             return st.success("The PDF file has been loaded.")
         else:
             return st.info(r.json()["result"])
@@ -120,15 +153,16 @@ def main():
                 file.write(content)
             return f"[ERROR]: {r.text}"
 
-        result = r.json()["result"]
-        result = result.split("###")
-        keys = ["prompt", "answer", "token_used", "gpt_model"]
-        # Error in OpenAI server also gives status_code 200
-        if len(result) >= 0:
-            result.extend([result, 0, gpt_model])
-
-        result_dict = dict(zip(keys, result))
+        result_dict = result_to_dict(r, 0)
         return result_dict
+
+    def calculate_cost(token_used, gpt_model):
+        st.session_state["total_token"] += int(token_used)
+        if "gpt-3" in gpt_model:
+            current_cost = st.session_state["total_token"] * 0.002 / 1000
+        else:
+            current_cost = st.session_state["total_token"] * 0.06 / 1000
+        st.session_state["total_cost"] += current_cost
 
     # %%
     # main page layout
@@ -149,9 +183,7 @@ def main():
         st.session_state["api_key"] = False
 
     if "generated" not in st.session_state:
-        st.session_state["generated"] = [
-            "Hello there. I'm pdfGPT-chat. Do you have any question about your PDF?"
-        ]
+        st.session_state["generated"] = ["Hello there. I'm pdfGPT-chat. Do you have any question about your PDF?"]
 
     if "loaded" not in st.session_state:
         st.session_state["loaded"] = False
@@ -307,12 +339,7 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
                     st.session_state.generated.append(response["answer"])
 
                     # calculate cost
-                    st.session_state["total_token"] += int(response["token_used"])
-                    if "gpt-3" in response["gpt_model"]:
-                        current_cost = st.session_state["total_token"] * 0.002 / 1000
-                    else:
-                        current_cost = st.session_state["total_token"] * 0.06 / 1000
-                    st.session_state["total_cost"] += current_cost
+                    calculate_cost(response["token_used"], response["gpt_model"])
 
             if not user_input and submit_button:
                 st.error("Please write your question.")
@@ -357,15 +384,15 @@ color:darkgray'>Developed with ❤ by asyafiqe</p>
         st.markdown(SIGNATURE, unsafe_allow_html=True)
 
     # %%
-    # javascript
-
-    # scroll halfway through the page
+    # # javascript
+    #
+    # # scroll halfway through the page
     js = f"""
     <script>
     function scroll() {{
     var textAreas = parent.document.querySelectorAll('section.main');
-    var halfwayScroll = 0.5 * textAreas[0].scrollHeight; // Calculate halfway scroll position
-    
+    var halfwayScroll = 0.4 * textAreas[0].scrollHeight; // Calculate halfway scroll position
+
     for (let index = 0; index < textAreas.length; index++) {{
     textAreas[index].scrollTop = halfwayScroll; // Set scroll position to halfway
     }}
