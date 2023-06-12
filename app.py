@@ -98,9 +98,9 @@ def main():
             result = result_to_dict(r, 1)
 
             # concatenate reply
-            reply_summary = "Hello there. I'm **pdfGPT-chat**.\nHere is a **summary** of your PDF:\n\n"
+            reply_summary = "Hello there. I'm pdfGPT-chat.\nHere is a summary of your PDF:\n\n"
             reply_summary += result["answer"]
-            reply_summary += "\n\nDo you have any **question** about your PDF?"
+            reply_summary += "\n\nDo you have any question about your PDF?"
 
             if len(st.session_state["past"]) == 1:
                 st.session_state["generated"][0] = reply_summary
